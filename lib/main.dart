@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'config.dart';
+import 'web.dart';
+import 'goodsdriver.dart';
 
 void main() {
   runApp(MyApp());
@@ -39,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> _storeNames = <String>['Բար', 'Խոհանոց', 'Սառնարան'];
   List<int> _cafeIds = <int>[2,3,4,6,7,8];
   List<int> _storeIds = <int>[2,3,4];
-
+  GoodsList _goodsList = GoodsList();
 
   @override
   void initState() {
@@ -95,9 +98,36 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded(
                 child: Container (
-
+                  child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 500,
+                          childAspectRatio: 10,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5),
+                      itemCount: _goodsList.goods.length,
+                      itemBuilder: (BuildContext ctx, index) {
+                        return  Container(
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.only(left: 4),
+                          child: Row (
+                            children: [
+                              Container (
+                                width: 150,
+                                child: Text(_goodsList.goods[index].name),
+                              ),
+                              Container(
+                                width: 50,
+                                child: Text(_goodsList.goods[index].qtyTill.toStringAsFixed(1))
+                              )
+                            ],
+                          ),
+                          decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(15)),
+                          );
+                        })
+                  )
                 )
-            )
           ],
         )
       )
@@ -144,17 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showStore() async {
-    try {
-      final response = await http.get(Uri.parse(Config.server_jzstore)).timeout(Duration(seconds: 2), onTimeout: (){
-        throw Exception("Server timeout. ${Config.server_jzstore}");
+    var web = Web(link: Config.server_jzstore);
+    web.addParam("key", "adsfgjlsdkajfkskadfj")
+        .addParam("request", "store")
+        .addParam("cafe", _cafeIds[_cafeNames.indexOf(_object!)].toString())
+        .addParam("store", _storeIds[_storeNames.indexOf(_store!)].toString());
+    if (await web.GET()) {
+      setState(() {
+        _goodsList = GoodsList.fromJson(jsonDecode(web.body!));
       });
-      if (response.statusCode == 200) {
-        print(response.body);
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
-      print(e);
     }
   }
 }
