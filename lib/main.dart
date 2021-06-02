@@ -43,6 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<int> _cafeIds = <int>[2,3,4,6,7,8];
   List<int> _storeIds = <int>[2,3,4];
   GoodsList _goodsList = GoodsList();
+  GoodsList _proxyGoodsList = GoodsList();
+  TextEditingController _searchInGoods = TextEditingController();
 
   @override
   void initState() {
@@ -96,6 +98,34 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ],
             ),
+            Container(
+              margin: EdgeInsets.only(left: 5, top: 5, bottom: 5),
+              height: 30,
+              child: Row(
+                children: [
+                  Container(
+                    width: 100,
+                    child:  TextField(
+                      controller: _searchInGoods,
+                      onChanged: searchInGoods,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Փնտրել",
+                      ),
+                    )
+                  ),
+                  Container(
+                    child: IconButton(
+                      icon: Image.asset("images/close.png"),
+                      onPressed: (){
+                        _searchInGoods.clear();
+                        searchInGoods("");
+                      },
+                    )
+                  )
+                ],
+              ),
+            ),
             Expanded(
                 child: Container (
                   child: GridView.builder(
@@ -104,44 +134,19 @@ class _MyHomePageState extends State<MyHomePage> {
                               childAspectRatio: 10,
                               crossAxisSpacing: 5,
                               mainAxisSpacing: 5),
-                          itemCount: _goodsList.goods.length,
+                          itemCount: _proxyGoodsList.goods.length + 1,
                           itemBuilder: (BuildContext ctx, index) {
-                            return  Container(
-                              alignment: Alignment.center,
-                              margin: EdgeInsets.only(left: 4),
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: [
-                                  Container (
-                                    width: 150,
-                                    child: Text(_goodsList.goods[index].name),
-                                  ),
-                                  Container(
-                                      width: 50,
-                                      child: Text(_goodsList.goods[index].qtyTill.toStringAsFixed(1))
-                                  ),
-                                  Container(
-                                      width: 60,
-                                      child: Text("+" + _goodsList.goods[index].qtyIn.toStringAsFixed(1))
-                                  ),
-                                  Container(
-                                      width: 60,
-                                      child: Text("-" + _goodsList.goods[index].qtyOut.toStringAsFixed(1))
-                                  ),
-                                  Container(
-                                      width: 50,
-                                      child: Text("-" + _goodsList.goods[index].qtyOut2.toStringAsFixed(1))
-                                  ),
-                                  Container(
-                                      width: 50,
-                                      child: Text(_goodsList.goods[index].qtyFinal.toStringAsFixed(1))
-                                  )
-                                ],
-                              ),
-                              decoration: BoxDecoration(
-                                  color: Colors.amber,
-                                  borderRadius: BorderRadius.circular(15)),
-                            );
+                            if (index == 0) {
+                              return getRow("Անվանում", "Սկիզբ", "Մուտք", "Վաճառք", "Դուրս գրում", "Մնացորդ");
+                            } else {
+                              Goods g = _proxyGoodsList.goods[index - 1];
+                              return getRow(
+                                  g.name, g.qtyTill.toStringAsFixed(1),
+                                  g.qtyIn.toStringAsFixed(1),
+                                  g.qtyOut.toStringAsFixed(1),
+                                  g.qtyOut2.toStringAsFixed(1),
+                                  g.qtyFinal.toStringAsFixed(1));
+                            }
                           }
                     )
                   )
@@ -200,7 +205,60 @@ class _MyHomePageState extends State<MyHomePage> {
     if (await web.GET()) {
       setState(() {
         _goodsList = GoodsList.fromJson(jsonDecode(web.body!));
+        _proxyGoodsList.goods.clear();
+        for (Goods g in _goodsList.goods) {
+          _proxyGoodsList.goods.add(g);
+        }
       });
     }
+  }
+
+  Widget getRow(String c1, String c2, String c3, String c4, String c5, String c6) {
+    return Container(
+      alignment: Alignment.center,
+      margin: EdgeInsets.only(left: 4),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Container (
+            width: 150,
+            child: Text(c1),
+          ),
+          Container(
+              width: 50,
+              child: Text(c2)
+          ),
+          Container(
+              width: 60,
+              child: Text("+" + c3)
+          ),
+          Container(
+              width: 60,
+              child: Text("-" + c4)
+          ),
+          Container(
+              width: 50,
+              child: Text("-" + c5)
+          ),
+          Container(
+              width: 50,
+              child: Text(c6)
+          )
+        ],
+      ),
+      decoration: BoxDecoration(
+          color: Colors.amber,
+          borderRadius: BorderRadius.circular(15)),
+    );
+  }
+
+  void searchInGoods(String s) {
+    _proxyGoodsList.goods.clear();
+    for (Goods g in _goodsList.goods) {
+      if (g.name.toLowerCase().contains(s.toLowerCase())) {
+        _proxyGoodsList.goods.add(g);
+      }
+    }
+    setState((){});
   }
 }
