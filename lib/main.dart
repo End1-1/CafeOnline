@@ -99,35 +99,53 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
                 child: Container (
                   child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 500,
-                          childAspectRatio: 10,
-                          crossAxisSpacing: 5,
-                          mainAxisSpacing: 5),
-                      itemCount: _goodsList.goods.length,
-                      itemBuilder: (BuildContext ctx, index) {
-                        return  Container(
-                          alignment: Alignment.center,
-                          margin: EdgeInsets.only(left: 4),
-                          child: Row (
-                            children: [
-                              Container (
-                                width: 150,
-                                child: Text(_goodsList.goods[index].name),
+                          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 500,
+                              childAspectRatio: 10,
+                              crossAxisSpacing: 5,
+                              mainAxisSpacing: 5),
+                          itemCount: _goodsList.goods.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return  Container(
+                              alignment: Alignment.center,
+                              margin: EdgeInsets.only(left: 4),
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: [
+                                  Container (
+                                    width: 150,
+                                    child: Text(_goodsList.goods[index].name),
+                                  ),
+                                  Container(
+                                      width: 50,
+                                      child: Text(_goodsList.goods[index].qtyTill.toStringAsFixed(1))
+                                  ),
+                                  Container(
+                                      width: 60,
+                                      child: Text("+" + _goodsList.goods[index].qtyIn.toStringAsFixed(1))
+                                  ),
+                                  Container(
+                                      width: 60,
+                                      child: Text("-" + _goodsList.goods[index].qtyOut.toStringAsFixed(1))
+                                  ),
+                                  Container(
+                                      width: 50,
+                                      child: Text("-" + _goodsList.goods[index].qtyOut2.toStringAsFixed(1))
+                                  ),
+                                  Container(
+                                      width: 50,
+                                      child: Text(_goodsList.goods[index].qtyFinal.toStringAsFixed(1))
+                                  )
+                                ],
                               ),
-                              Container(
-                                width: 50,
-                                child: Text(_goodsList.goods[index].qtyTill.toStringAsFixed(1))
-                              )
-                            ],
-                          ),
-                          decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(15)),
-                          );
-                        })
+                              decoration: BoxDecoration(
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(15)),
+                            );
+                          }
+                    )
                   )
-                )
+            )
           ],
         )
       )
