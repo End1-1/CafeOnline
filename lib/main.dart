@@ -225,24 +225,29 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(c1),
           ),
           Container(
-              width: 50,
-              child: Text(c2)
+            alignment: Alignment.topCenter,
+            width: 50,
+            child: Text(c2)
           ),
           Container(
-              width: 60,
-              child: Text("+" + c3)
+            alignment: Alignment.topCenter,
+            width: 60,
+            child: Text("+" + c3)
           ),
           Container(
-              width: 60,
-              child: Text("-" + c4)
+            alignment: Alignment.topCenter,
+            width: 60,
+            child: Text("-" + c4)
           ),
           Container(
-              width: 50,
-              child: Text("-" + c5)
+            alignment: Alignment.topCenter,
+            width: 50,
+            child: Text("-" + c5)
           ),
           Container(
-              width: 50,
-              child: Text(c6)
+            alignment: Alignment.topCenter,
+            width: 50,
+            child: Text(c6)
           )
         ],
       ),
