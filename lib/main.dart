@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:cafe_online/store_filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'config.dart';
-import 'web.dart';
-import 'goodsdriver.dart';
+import 'package:cafe_online/config.dart';
+import 'package:cafe_online/web.dart';
+import 'package:cafe_online/goodsdriver.dart';
+import 'package:cafe_online/consts.dart' as Const;
+import 'package:cafe_online/ishowstore.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,7 +26,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatefulWidget  {
   MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
@@ -32,26 +35,17 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> implements IShowStore {
 
-  String? _object;
-  String? _store;
-  String? _monthName;
-  List<String> _months = <String>['Հունվար','Փետրվար','Մարտ','Ապրիլ','Մայիս','Հունիս','Հուլիս','Օգոստոս','Սեպտեմբեր','Հոկտեմբեր','Նոյեմբեր','Դեկտեմբեր'];
-  List<String> _cafeNames = <String>['Օպերա', 'Թումանյան','Կոմիտաս', 'Աբովյան', 'Արմենիա', 'Երևան Մոլլ'];
-  List<String> _storeNames = <String>['Բար', 'Խոհանոց', 'Սառնարան'];
-  List<int> _cafeIds = <int>[2,3,4,6,7,8];
-  List<int> _storeIds = <int>[2,3,4];
+
   GoodsList _goodsList = GoodsList();
   GoodsList _proxyGoodsList = GoodsList();
   TextEditingController _searchInGoods = TextEditingController();
+  bool _hideFilter = false;
 
   @override
   void initState() {
     super.initState();
-    _object = _cafeNames[0];
-    _store = _storeNames[0];
-    _monthName = _currentMonthName();
   }
 
   @override
@@ -63,41 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column (
           children: [
-            Row (
-              children: [
-                Container(
-                  margin: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 5),
-                  child: Text(_monthName!)
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 5),
-                  child: DropdownButton (
-                    value: _object,
-                    items: _cafeDropdownMenu(),
-                    onChanged: _cafeChanged
-                  )
-                ),
-                Container(
-                    margin: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 5),
-                    child: DropdownButton (
-                        value: _store,
-                        items: _storeDropDownMenu(),
-                        onChanged: _storeChanged
-                    )
-                ),
-                Expanded(
-                  child: Container(
-
-                  )
-                ),
-                Container(
-                  child: TextButton(
-                    onPressed: _showStore,
-                    child: Text("Դիտել")
-                  )
-                )
-              ],
-            ),
+            _hideFilter ? Container() : StoreFilter(ishowstore: this),
             Container(
               margin: EdgeInsets.only(left: 5, top: 5, bottom: 5),
               height: 30,
@@ -122,7 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
                         searchInGoods("");
                       },
                     )
-                  )
+                  ),
+                  Expanded(
+                      child: Container()
+                  ),
+                  Container(
+                      child: IconButton(
+                        icon: Image.asset("images/filter.png"),
+                        onPressed: (){
+                          setState((){_hideFilter = !_hideFilter;});
+                        },
+                      )
+                  ),
                 ],
               ),
             ),
@@ -155,62 +126,6 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       )
     );
-  }
-
-  List<DropdownMenuItem<String>> _cafeDropdownMenu() {
-    List<DropdownMenuItem<String>> items = [];
-    for (String s in _cafeNames) {
-      items.add(DropdownMenuItem(
-        value: s,
-        child: Text(s)
-      ));
-    }
-    return items;
-  }
-
-  void _cafeChanged(String? s) {
-    setState((){
-      _object = s;
-    });
-  }
-
-  List<DropdownMenuItem<String>> _storeDropDownMenu() {
-    List<DropdownMenuItem<String>> items = [];
-    for (String s in _storeNames) {
-      items.add(DropdownMenuItem(
-          value: s,
-          child: Text(s)
-      ));
-    }
-    return items;
-  }
-
-  void _storeChanged(String? s) {
-    setState((){
-      _store = s;
-    });
-  }
-
-  String _currentMonthName() {
-    var now = DateTime.now();
-    return _months[now.month - 1];
-  }
-
-  void _showStore() async {
-    var web = Web(link: Config.server_jzstore);
-    web.addParam("key", "adsfgjlsdkajfkskadfj")
-        .addParam("request", "store")
-        .addParam("cafe", _cafeIds[_cafeNames.indexOf(_object!)].toString())
-        .addParam("store", _storeIds[_storeNames.indexOf(_store!)].toString());
-    if (await web.GET()) {
-      setState(() {
-        _goodsList = GoodsList.fromJson(jsonDecode(web.body!));
-        _proxyGoodsList.goods.clear();
-        for (Goods g in _goodsList.goods) {
-          _proxyGoodsList.goods.add(g);
-        }
-      });
-    }
   }
 
   Widget getRow(String c1, String c2, String c3, String c4, String c5, String c6) {
@@ -266,4 +181,25 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     setState((){});
   }
+
+  @override
+  void showStore(int month, int cafeid, int storeid, int year) async {
+    var web = Web(link: Config.server_jzstore);
+      web.addParam("key", "adsfgjlsdkajfkskadfj")
+          .addParam("request", "store")
+          .addParam("cafe", cafeid.toString())
+          .addParam("store", storeid.toString())
+          .addParam("month", month.toString())
+          .addParam("year", year.toString());
+      if (await web.GET())
+        setState(() {
+          _hideFilter = true;
+          _goodsList = GoodsList.fromJson(jsonDecode(web.body!));
+          _proxyGoodsList.goods.clear();
+          for (Goods g in _goodsList.goods) {
+          _proxyGoodsList.goods.add(g);
+        }
+      });
+    }
+
 }
